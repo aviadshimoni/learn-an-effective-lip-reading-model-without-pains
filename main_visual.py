@@ -60,13 +60,13 @@ def test(batch_size, num_workers=1):
         video_model.eval()
 
         tic = time.time()
-        video = tensor_input['video'].cuda(non_blocking=True)
-        label = tensor_input['label'].cuda(non_blocking=True)
+        video = tensor_input.get("video").cuda(non_blocking=True)
+        label = tensor_input.get("label").cuda(non_blocking=True)
 
         with autocast():
-            y_v = video_model(video)
+            predicted_label = video_model(video)
 
-        validation_accuracy.extend((y_v.argmax(-1) == label).cpu().numpy().tolist())
+        validation_accuracy.extend((predicted_label.argmax(-1) == label).cpu().numpy().tolist())
         toc = time.time()
 
         if i_iter % 10 == 0:
