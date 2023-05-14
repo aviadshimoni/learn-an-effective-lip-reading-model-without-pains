@@ -65,7 +65,6 @@ def test(batch_size, num_workers=1):
         if i_iter % 10 == 0:
             msg = helpers.add_msg('', 'v_acc={:.5f}', np.array(validation_accuracy).mean())
             msg = helpers.add_msg(msg, 'eta={:.5f}', (toc - tic) * (len(loader) - i_iter) / 3600.0)
-
             print(msg)
 
     accuracy = float(np.array(validation_accuracy).mean())
@@ -108,7 +107,7 @@ def train():
             for k, v in loss.items():
                 msg += f',{k}={v:.5f}'
             msg += f",lr={helpers.show_lr(optim_video)},best_acc={best_acc:2f}"
-            print(msg)
+            print("oriya" + msg)
 
             if i_iteration == len(loader) - 1 or (epoch == 0 and i_iteration == 0):
                 acc, msg = test(args.batch_size)
