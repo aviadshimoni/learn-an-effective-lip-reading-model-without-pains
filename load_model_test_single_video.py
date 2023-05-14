@@ -2,13 +2,14 @@ import torch
 import cv2
 import numpy as np
 from scripts.prepare_lrw import extract_opencv
+from model.model import VideoModel
+
 from google.colab import files
 
 # Load the trained model
-# model = YourModelClass()
-# model.load_state_dict(torch.load('/path/to/weights/checkpoint.pth'))
+model = VideoModel(500)
+model.load_state_dict(torch.load('/tf/weightslrw-border-cosine-lr-acc-0.87520.pt'))
 
-#video_model = torch.load(checkpoint_path)
 
 # Define a function to preprocess the video frames
 def preprocess_frames(frames):

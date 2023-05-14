@@ -138,7 +138,7 @@ class VideoCNN(nn.Module):
         return x
 
     def forward(self, x):
-        b, t = x.size()[:2]
+        b, t = x.shape[:2]
 
         x = self.visual_frontend_forward(x)
 
