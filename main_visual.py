@@ -1,6 +1,5 @@
 import argparse
 import torch
-import torch.nn as nn
 import os
 import numpy as np
 import time
@@ -31,14 +30,9 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--test', type=str2bool, required=True)
     parser.add_argument('--num_workers', type=int, required=False, default=1)
     parser.add_argument('--gpus', type=str, required=False, default='0')
-
-    # load opts
     parser.add_argument('--weights', type=str, required=False, default=None)
-
-    # save prefix
     parser.add_argument('--save_prefix', type=str, required=True)
-
-    # dataset
+    parser.add_argument('--mixup', type=str2bool, required=False, default=False)
     parser.add_argument('--dataset', type=str, required=False, default='lrw')
 
     args = parser.parse_args()
@@ -56,17 +50,16 @@ def test(batch_size, num_workers=1):
     print('start testing')
     validation_accuracy = []
 
-    for i_iter, tensor_input in enumerate(loader):
+    for i_iter, sample in enumerate(loader):
         video_model.eval()
 
         tic = time.time()
-        video = tensor_input.get("video").cuda(non_blocking=True)
-        label = tensor_input.get("label").cuda(non_blocking=True)
+        video, label = helpers.prepare_data(sample)
 
         with autocast():
-            predicted_label = video_model(video)
+            y_v = video_model(video)
 
-        validation_accuracy.extend((predicted_label.argmax(-1) == label).cpu().numpy().tolist())
+        validation_accuracy.extend((y_v.argmax(-1) == label).cpu().numpy().tolist())
         toc = time.time()
 
         if i_iter % 10 == 0:
@@ -88,34 +81,27 @@ def train():
     loader = helpers.dataset2dataloader(dataset, args.batch_size, args.num_workers)
 
     max_epoch = args.max_epoch
+    alpha = 0.2
     tot_iter = 0
     best_acc = 0.0
+    train_losses = []
     scaler = GradScaler()
     for epoch in range(max_epoch):
-
+        train_loss = 0.0
         for i_iteration, sample in enumerate(loader):
             tic = time.time()
 
             video_model.train()
-            video = sample['video'].cuda(non_blocking=True)
-            label = sample['label'].cuda(non_blocking=True).long()
+            video, label = helpers.prepare_data(sample)
 
-            loss = {}
-
-            loss_fn = nn.CrossEntropyLoss()
-
-            with autocast():
-                predicted_label = video_model(video)
-
-                loss_bp = loss_fn(predicted_label, label)
-
-            loss['CE V'] = loss_bp
+            loss = helpers.calculate_loss(args.mixup, alpha, video_model, video, label)
 
             optim_video.zero_grad()
-            scaler.scale(loss_bp).backward()
+            scaler.scale(loss['CE V']).backward()
             scaler.step(optim_video)
             scaler.update()
 
+            train_loss += loss['CE V'].item()
             toc = time.time()
 
             msg = f'epoch={epoch},train_iter={tot_iter},eta={(toc - tic) * (len(loader) - i_iteration) / 3600.0:.5f}'
@@ -142,6 +128,9 @@ def train():
                     best_acc = max(acc, best_acc)
 
             tot_iter += 1
+
+        train_losses.append(train_loss / len(loader))
+        helpers.plot_train_loss(train_losses, epoch)
 
         scheduler.step()
 
