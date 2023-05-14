@@ -2,7 +2,7 @@ import torch
 import cv2
 import numpy as np
 from scripts.prepare_lrw import extract_opencv
-# from google.colab import files
+from google.colab import files
 
 # Load the trained model
 # model = YourModelClass()
