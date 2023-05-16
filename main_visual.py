@@ -105,7 +105,7 @@ def train():
             toc = time.time()
 
             if i_iteration == len(loader) - 1 or (epoch == 0 and i_iteration == 0):
-                msg = f'epoch={epoch},train_iter={1},eta={(toc - tic) * (len(loader) - i_iteration) / 3600.0:.5f}'
+                msg = f'epoch={epoch},train_iter={tot_iter},eta={(toc - tic) * (len(loader) - i_iteration) / 3600.0:.5f}'
                 for k, v in loss.items():
                     msg += f',{k}={v:.5f}'
                 msg += f",lr={helpers.show_lr(optim_video)},best_acc={best_acc:2f}"
@@ -114,7 +114,7 @@ def train():
                 acc, msg = test(args.batch_size)
 
                 if acc > best_acc:
-                    saved_file = f'{args.save_prefix}_iter_{1}_epoch_{epoch}_{msg}.pt'
+                    saved_file = f'{args.save_prefix}_iter_{tot_iter}_epoch_{epoch}_{msg}.pt'
 
                     temp = os.path.split(saved_file)[0]
                     if not os.path.exists(temp):
