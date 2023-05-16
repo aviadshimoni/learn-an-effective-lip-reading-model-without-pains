@@ -82,12 +82,12 @@ def train():
 
     max_epoch = args.max_epoch
     alpha = 0.2
-    tot_iter = 0
     best_acc = 0.0
     train_losses = []
     scaler = GradScaler()
     for epoch in range(max_epoch):
         train_loss = 0.0
+        tot_iter = 0
         for i_iteration, sample in enumerate(loader):
             tic = time.time()
 
@@ -105,7 +105,7 @@ def train():
             toc = time.time()
 
             if i_iteration == len(loader) - 1 or (epoch == 0 and i_iteration == 0):
-                msg = f'epoch={epoch},train_iter={tot_iter},eta={(toc - tic) * (len(loader) - i_iteration) / 3600.0:.5f}'
+                msg = f'epoch={epoch},train_iter={1},eta={(toc - tic) * (len(loader) - i_iteration) / 3600.0:.5f}'
                 for k, v in loss.items():
                     msg += f',{k}={v:.5f}'
                 msg += f",lr={helpers.show_lr(optim_video)},best_acc={best_acc:2f}"
