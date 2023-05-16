@@ -63,7 +63,7 @@ def test(batch_size, num_workers=1):
         toc = time.time()
 
         if i_iter % 10 == 0:
-            msg = helpers.add_msg('', 'v_acc={:.5f}', np.array(validation_accuracy).mean())
+            msg = helpers.z('', 'v_acc={:.5f}', np.array(validation_accuracy).mean())
             msg = helpers.add_msg(msg, 'eta={:.5f}', (toc - tic) * (len(loader) - i_iter) / 3600.0)
 
             print(msg)
