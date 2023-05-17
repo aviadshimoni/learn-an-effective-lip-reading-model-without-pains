@@ -128,7 +128,7 @@ def train():
                         'video_model': video_model.module.state_dict(),
                     }, saved_file)
 
-                if tot_iter != 1:
+                if tot_iter != 0:
                     best_acc = max(acc, best_acc)
 
             tot_iter += 1
