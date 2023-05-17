@@ -85,10 +85,10 @@ def train():
     best_acc = 0.0
     train_losses = []
     scaler = GradScaler()
-    for epoch in range(max_epoch):
+    for epoch in range(1, max_epoch):
         train_loss = 0.0
-        tot_iter = 0
         for i_iteration, sample in enumerate(loader):
+            tot_iter = 1
             tic = time.time()
 
             video_model.train()
@@ -133,7 +133,6 @@ def train():
         helpers.plot_train_loss(train_losses, epoch)
 
         scheduler.step()
-
 
 
 if __name__ == '__main__':
