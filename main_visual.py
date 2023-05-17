@@ -89,7 +89,7 @@ def train():
     best_acc = 0.0
     train_losses = []
     scaler = GradScaler()
-    for epoch in range(1, max_epoch):
+    for epoch in range(max_epoch):
         train_loss = 0.0
         for i_iteration, sample in enumerate(loader):
             tot_iter = 1
@@ -128,7 +128,7 @@ def train():
                         'video_model': video_model.module.state_dict(),
                     }, saved_file)
 
-                if tot_iter != 0:
+                if tot_iter != 1:
                     best_acc = max(acc, best_acc)
 
             tot_iter += 1
