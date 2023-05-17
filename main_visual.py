@@ -108,7 +108,7 @@ def train():
             train_loss += loss['CE V'].item()
             toc = time.time()
 
-            if i_iteration == len(loader) - 1 or (epoch == 0 and i_iteration == 0):
+            if i_iteration == len(loader) - 1 or (epoch == 1 and i_iteration == 0):
                 msg = f'epoch={epoch},train_iter={tot_iter},eta={(toc - tic) * (len(loader) - i_iteration) / 3600.0:.5f}'
                 for k, v in loss.items():
                     msg += f',{k}={v:.5f}'
