@@ -8,8 +8,10 @@ import torch.optim as optim
 from torch.cuda.amp import autocast, GradScaler
 from utils import helpers
 from model.lrw_dataset import LRWDataset
+import logging
 
 torch.backends.cudnn.benchmark = True
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -41,16 +43,15 @@ def parse_arguments() -> argparse.Namespace:
     return args
 
 
-@torch.no_grad()
 def test(batch_size, num_workers=1):
     dataset = LRWDataset("val", dataset_prefix="")
-    if not hasattr(test, "first call"):
-        print(f"Dataset object of Validation set: {dataset}, len is: {len(dataset)}")
-        setattr(test, "first call", True)
+    if not hasattr(test, "first_call"):
+        logging.info(f"Dataset object of Validation set: {dataset}, len is: {len(dataset)}")
+        setattr(test, "first_call", True)
 
     loader = helpers.dataset2dataloader(dataset, batch_size, num_workers, shuffle=False)
 
-    print('start testing')
+    logging.info('start testing')
     validation_accuracy = []
 
     for i_iter, sample in enumerate(loader):
@@ -69,7 +70,7 @@ def test(batch_size, num_workers=1):
             msg = helpers.add_msg('', 'v_acc={:.5f}', np.array(validation_accuracy).mean())
             msg = helpers.add_msg(msg, 'eta={:.5f}', (toc - tic) * (len(loader) - i_iter) / 3600.0)
 
-            print(msg)
+            logging.info(msg)
 
     accuracy = float(np.array(validation_accuracy).mean())
     accuracy_msg = f'v_acc_{accuracy:.5f}_'
@@ -79,7 +80,7 @@ def test(batch_size, num_workers=1):
 
 def train():
     dataset = LRWDataset("train", dataset_prefix="")
-    print(f"Dataset object of training set: {dataset}, len is: {len(dataset)}")
+    logging.info(f"Dataset object of training set: {dataset}, len is: {len(dataset)}")
 
     loader = helpers.dataset2dataloader(dataset, args.batch_size, args.num_workers)
 
@@ -112,7 +113,7 @@ def train():
                 for k, v in loss.items():
                     msg += f',{k}={v:.5f}'
                 msg += f",lr={helpers.show_lr(optim_video)},best_acc={best_acc:2f}"
-                print(msg)
+                logging.info(msg)
 
                 acc, msg = test(args.batch_size)
 
