@@ -11,7 +11,6 @@ from model.lrw_dataset import LRWDataset
 
 torch.backends.cudnn.benchmark = True
 
-global flag
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -45,9 +44,9 @@ def parse_arguments() -> argparse.Namespace:
 @torch.no_grad()
 def test(batch_size, num_workers=1):
     dataset = LRWDataset("val", dataset_prefix="")
-    if not hasattr(test, "first"):
+    if not hasattr(test, "first call"):
         print(f"Dataset object of Validation set: {dataset}, len is: {len(dataset)}")
-        setattr(test, "first", True)
+        setattr(test, "first call", True)
 
     loader = helpers.dataset2dataloader(dataset, batch_size, num_workers, shuffle=False)
 
