@@ -4,7 +4,6 @@ import numpy as np
 from scripts.prepare_lrw import extract_opencv
 from model.model import VideoModel
 
-from google.colab import files
 
 # Load the trained model
 model = VideoModel(500)
