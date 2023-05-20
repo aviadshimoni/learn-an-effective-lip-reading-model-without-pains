@@ -1,0 +1,38 @@
+import numpy as np
+import torch
+import time
+from torch.cuda.amp import autocast
+from utils import helpers
+from model.lrw_dataset import LRWDataset
+
+@torch.no_grad()
+def test(video_model, batch_size, num_workers=1):
+    dataset = LRWDataset("val", dataset_prefix="")
+    print(f"Dataset object of Validation set: {dataset}, len is: {len(dataset)}")
+    loader = helpers.dataset2dataloader(dataset, batch_size, num_workers, shuffle=False)
+
+    print('start testing')
+    validation_accuracy = []
+
+    for i_iter, sample in enumerate(loader):
+        video_model.eval()
+
+        tic = time.time()
+        video, label = helpers.prepare_data(sample)
+
+        with autocast():
+            y_v = video_model(video)
+
+        validation_accuracy.extend((y_v.argmax(-1) == label).cpu().numpy().tolist())
+        toc = time.time()
+
+        if i_iter % 10 == 0:
+            msg = helpers.add_msg('', 'v_acc={:.5f}', np.array(validation_accuracy).mean())
+            msg = helpers.add_msg(msg, 'eta={:.5f}', (toc - tic) * (len(loader) - i_iter) / 3600.0)
+
+            print(msg)
+
+    accuracy = float(np.array(validation_accuracy).mean())
+    accuracy_msg = f'v_acc_{accuracy:.5f}_'
+
+    return accuracy, accuracy_msg
