@@ -59,7 +59,7 @@ def extract_opencv(file_name: str) -> list:
         ret, frame = cap.read()  # BGR
         if ret:
             frame = frame[115:211, 79:175]
-            # frame = jpeg.encode(frame)
+            frame = jpeg.encode(frame)
             video.append(frame)
         else:
             break
