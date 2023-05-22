@@ -20,6 +20,7 @@ def load_missing(model, pretrained_dict):
     print('miss matched params:', missed_params)
     model_dict.update(pretrained_dict)
     model.load_state_dict(model_dict)
+
     return model
 
 
@@ -53,29 +54,28 @@ def calculate_loss(mixup, alpha, video_model, video, label):
             predicted_label = video_model(video)
             loss_bp = loss_fn(predicted_label, label)
     loss['CE V'] = loss_bp
+
     return loss
 
 
-def prepare_data(sample):
+def prepare_data(sample: {}):
     video = sample['video'].cuda(non_blocking=True)
     label = sample['label'].cuda(non_blocking=True).long()
+
     return video, label
 
 
-def plot_train_loss(train_losses, epoch):
-    print_interval = 5
-    if epoch > 0 & epoch % print_interval == 0:
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.plot(train_losses, label='Training Loss')
-        ax.set_xlabel('Epoch')
-        ax.set_ylabel('Loss')
-        ax.set_title('Training Loss vs. Epoch')
-        ax.legend()
-        plt.show()
+def plot_train_metrics(train_losses: [], train_accuracies: [], epoch: int) -> None:
+    """
+    Plot the metrics of train
+    :param train_losses: list of losses
+    :param train_accuracies: list of accuracies
+    :param epoch: number of epoch
+    :return: None
+    """
 
-
-def plot_train_metrics(train_losses, train_accuracies, epoch):
     print_interval = 5
+
     if epoch > 0 and epoch % print_interval == 0:
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 10))
 
@@ -94,8 +94,10 @@ def plot_train_metrics(train_losses, train_accuracies, epoch):
         plt.tight_layout()
         plt.show()
 
+
 def add_msg(msg, k, v):
     if msg:
         msg += ','
     msg += k.format(v)
+
     return msg
