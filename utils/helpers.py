@@ -47,7 +47,8 @@ def calculate_loss(mixup, alpha, video_model, video, label):
             mixed_video = mixup_coef * video + (1 - mixup_coef) * video[shuffled_indices, :]
             mixed_label_a, mixed_label_b = label, label[shuffled_indices]
             predicted_label = video_model(mixed_video)
-            loss_bp = mixup_coef * loss_fn(predicted_label, mixed_label_a) + (1 - mixup_coef) * loss_fn(predicted_label, mixed_label_b)
+            loss_bp = mixup_coef * loss_fn(predicted_label, mixed_label_a) + (1 - mixup_coef) * loss_fn(predicted_label,
+                                                                                                        mixed_label_b)
         else:
             predicted_label = video_model(video)
             loss_bp = loss_fn(predicted_label, label)
@@ -63,7 +64,7 @@ def prepare_data(sample):
 
 def plot_train_loss(train_losses, epoch):
     print_interval = 5
-    if epoch % print_interval == 0:
+    if epoch > 0 & epoch % print_interval == 0:
         fig, ax = plt.subplots(figsize=(8, 6))
         ax.plot(train_losses, label='Training Loss')
         ax.set_xlabel('Epoch')
@@ -72,6 +73,26 @@ def plot_train_loss(train_losses, epoch):
         ax.legend()
         plt.show()
 
+
+def plot_train_metrics(train_losses, train_accuracies, epoch):
+    print_interval = 5
+    if epoch > 0 and epoch % print_interval == 0:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 10))
+
+        ax1.plot(train_losses, label='Training Loss')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Loss')
+        ax1.set_title('Training Loss vs. Epoch')
+        ax1.legend()
+
+        ax2.plot(train_accuracies, label='Training Accuracy')
+        ax2.set_xlabel('Epoch')
+        ax2.set_ylabel('Accuracy')
+        ax2.set_title('Training Accuracy vs. Epoch')
+        ax2.legend()
+
+        plt.tight_layout()
+        plt.show()
 
 def add_msg(msg, k, v):
     if msg:

@@ -1,3 +1,5 @@
+import pickle
+
 import torch
 import os
 import numpy as np
@@ -13,7 +15,8 @@ from test import test
 torch.backends.cudnn.benchmark = True
 
 
-def train(lr, batch_size, n_class, max_epoch, num_workers=1, gpus='0', weights=None, save_prefix='', mixup=False, dataset='lrw'):
+def train(lr, batch_size, n_class, max_epoch, num_workers=1, gpus='0', weights=None, save_prefix='', mixup=False,
+          dataset='lrw'):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpus
 
     video_model = VideoModel(n_class).cuda()
@@ -37,7 +40,9 @@ def train(lr, batch_size, n_class, max_epoch, num_workers=1, gpus='0', weights=N
     tot_iter = 0
     best_acc = 0.0
     train_losses = []
+    train_accs = []
     scaler = GradScaler()
+
     for epoch in range(max_epoch):
         train_loss = 0.0
         for i_iteration, sample in enumerate(loader):
@@ -47,7 +52,6 @@ def train(lr, batch_size, n_class, max_epoch, num_workers=1, gpus='0', weights=N
             video, label = helpers.prepare_data(sample)
 
             loss = helpers.calculate_loss(mixup, alpha, video_model, video, label)
-
             optim_video.zero_grad()
             scaler.scale(loss['CE V']).backward()
             scaler.step(optim_video)
@@ -64,6 +68,7 @@ def train(lr, batch_size, n_class, max_epoch, num_workers=1, gpus='0', weights=N
 
             if i_iteration == len(loader) - 1 or (epoch == 0 and i_iteration == 0):
                 acc, msg = test(video_model, batch_size)
+                train_accs.append(acc)
 
                 if acc > best_acc:
                     saved_file = f'{save_prefix}_iter_{tot_iter}_epoch_{epoch}_{msg}.pt'
@@ -81,7 +86,10 @@ def train(lr, batch_size, n_class, max_epoch, num_workers=1, gpus='0', weights=N
 
             tot_iter += 1
 
-        train_losses.append(train_loss / len(loader))
-        helpers.plot_train_loss(train_losses, epoch)
+        loss = train_loss / len(loader)
+        train_losses.append(loss)
+
+        print('plot train metrics:')
+        helpers.plot_train_metrics(train_losses, train_accs, epoch)
 
         scheduler.step()
