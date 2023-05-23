@@ -20,6 +20,7 @@ def load_missing(model, pretrained_dict):
     print('miss matched params:', missed_params)
     model_dict.update(pretrained_dict)
     model.load_state_dict(model_dict)
+
     return model
 
 
@@ -47,29 +48,50 @@ def calculate_loss(mixup, alpha, video_model, video, label):
             mixed_video = mixup_coef * video + (1 - mixup_coef) * video[shuffled_indices, :]
             mixed_label_a, mixed_label_b = label, label[shuffled_indices]
             predicted_label = video_model(mixed_video)
-            loss_bp = mixup_coef * loss_fn(predicted_label, mixed_label_a) + (1 - mixup_coef) * loss_fn(predicted_label, mixed_label_b)
+            loss_bp = mixup_coef * loss_fn(predicted_label, mixed_label_a) + (1 - mixup_coef) * loss_fn(predicted_label,
+                                                                                                        mixed_label_b)
         else:
             predicted_label = video_model(video)
             loss_bp = loss_fn(predicted_label, label)
     loss['CE V'] = loss_bp
+
     return loss
 
 
-def prepare_data(sample):
+def prepare_data(sample: {}):
     video = sample['video'].cuda(non_blocking=True)
     label = sample['label'].cuda(non_blocking=True).long()
+
     return video, label
 
 
-def plot_train_loss(train_losses, epoch):
+def plot_train_metrics(train_losses: [], train_accuracies: [], epoch: int) -> None:
+    """
+    Plot the metrics of train
+    :param train_losses: list of losses
+    :param train_accuracies: list of accuracies
+    :param epoch: number of epoch
+    :return: None
+    """
+
     print_interval = 5
-    if epoch % print_interval == 0:
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.plot(train_losses, label='Training Loss')
-        ax.set_xlabel('Epoch')
-        ax.set_ylabel('Loss')
-        ax.set_title('Training Loss vs. Epoch')
-        ax.legend()
+
+    if epoch > 0 and epoch % print_interval == 0:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 10))
+
+        ax1.plot(train_losses, label='Training Loss')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Loss')
+        ax1.set_title('Training Loss vs. Epoch')
+        ax1.legend()
+
+        ax2.plot(train_accuracies, label='Training Accuracy')
+        ax2.set_xlabel('Epoch')
+        ax2.set_ylabel('Accuracy')
+        ax2.set_title('Training Accuracy vs. Epoch')
+        ax2.legend()
+
+        plt.tight_layout()
         plt.show()
 
 
@@ -77,4 +99,5 @@ def add_msg(msg, k, v):
     if msg:
         msg += ','
     msg += k.format(v)
+
     return msg
