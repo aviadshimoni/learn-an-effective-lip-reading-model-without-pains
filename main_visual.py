@@ -79,6 +79,7 @@ def test(batch_size, num_workers=1):
 
 
 def train():
+    # check
     dataset = LRWDataset("train", dataset_prefix="")
     logging.info(f"Dataset object of training set: {dataset}, len is: {len(dataset)}")
 
