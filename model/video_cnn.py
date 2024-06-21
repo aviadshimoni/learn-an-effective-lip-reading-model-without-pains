@@ -159,8 +159,6 @@ class VideoCNN(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, t = x.size()[:2]
         x = self.visual_frontend_forward(x)
-        # x = self.dropout(x)
-        feat = x.view(b, -1, 512)
         x = x.view(b, -1, 512)
 
         return x
